@@ -47,3 +47,21 @@ async fn ping(ctx: &Context, message: &Message) -> CommandResult {
 
     Ok(())
 }
+
+#[command]
+#[only_in("guilds")]
+#[bucket = "meta"]
+async fn serverinfo(ctx: &Context, message: &Message) -> CommandResult {
+    let raw_guild_id = message.guild_id.unwrap();
+    let raw_guild = raw_guild_id.to_guild_cached(ctx.cache.as_ref()).await;
+    let guild = raw_guild.unwrap();
+
+    let embed = Embed::fake(|e| {
+        e.title(format!("{} | Server Info", guild.name))
+            .field("ID", guild.id, true)
+    });
+
+    message.channel_id.say(&ctx.http, &embed).await?;
+
+    Ok(())
+}
