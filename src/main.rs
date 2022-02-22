@@ -1,12 +1,13 @@
 extern crate dotenv;
 
 mod commands;
+mod handler;
 
 use commands::meta::*;
+use handler::Handler;
 use std::{collections::HashSet, env, sync::Arc};
 
 use serenity::{
-    async_trait,
     client::bridge::gateway::{GatewayIntents, ShardManager},
     framework::{
         standard::{
@@ -16,26 +17,14 @@ use serenity::{
         StandardFramework,
     },
     http::Http,
-    model::{channel::Message, gateway::Activity, gateway::Ready},
+    model::channel::Message,
     prelude::*,
 };
-use tracing::info;
 
 pub struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
     type Value = Arc<Mutex<ShardManager>>;
-}
-
-struct Handler;
-
-#[async_trait]
-impl EventHandler for Handler {
-    async fn ready(&self, ctx: Context, ready: Ready) {
-        info!("Logged in as {}!", ready.user.tag());
-        ctx.set_activity(Activity::watching("The stars above"))
-            .await;
-    }
 }
 
 #[group]
