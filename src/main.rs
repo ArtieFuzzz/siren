@@ -1,12 +1,18 @@
 extern crate dotenv;
 
+mod commands;
+
+use commands::meta::*;
 use std::{collections::HashSet, env, sync::Arc};
 
 use serenity::{
     async_trait,
-    client::bridge::gateway::ShardManager,
+    client::bridge::gateway::{GatewayIntents, ShardManager},
     framework::{
-        standard::{macros::hook, DispatchError},
+        standard::{
+            macros::{group, hook},
+            DispatchError,
+        },
         StandardFramework,
     },
     http::Http,
@@ -29,6 +35,10 @@ impl EventHandler for Handler {
         info!("Logged in as {}!", ready.user.tag())
     }
 }
+
+#[group]
+#[commands(ping)]
+struct General;
 
 #[hook]
 async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError) {
@@ -65,11 +75,14 @@ async fn main() {
         Err(why) => panic!("Could not access application info: {:?}", why),
     };
 
-    let framework = StandardFramework::new().configure(|c| c.owners(owners).prefix("!!"));
+    let framework = StandardFramework::new()
+        .configure(|c| c.owners(owners).prefix("!!"))
+        .group(&GENERAL_GROUP);
 
     let mut client = Client::builder(&token)
         .framework(framework)
         .event_handler(Handler)
+        .intents(GatewayIntents::GUILDS | GatewayIntents::GUILD_MESSAGES)
         .await
         .expect("Client went brrr");
 
