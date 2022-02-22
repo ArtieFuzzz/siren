@@ -16,7 +16,7 @@ use serenity::{
         StandardFramework,
     },
     http::Http,
-    model::{channel::Message, gateway::Ready},
+    model::{channel::Message, gateway::Activity, gateway::Ready},
     prelude::*,
 };
 use tracing::info;
@@ -31,8 +31,10 @@ struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, _: Context, ready: Ready) {
-        info!("Logged in as {}!", ready.user.tag())
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        info!("Logged in as {}!", ready.user.tag());
+        ctx.set_activity(Activity::watching("The stars above"))
+            .await;
     }
 }
 
