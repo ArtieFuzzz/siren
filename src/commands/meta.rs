@@ -37,7 +37,8 @@ async fn ping(ctx: &Context, message: &Message) -> CommandResult {
         .say(
             &ctx.http,
             &format!(
-                "This Guilds' Shard latency is: {:?}",
+                "This Guilds' Shard ({}) latency is: {:?}",
+                ctx.shard_id,
                 runner.latency.unwrap()
             ),
         )

@@ -44,7 +44,7 @@ struct General;
 
 #[hook]
 async fn dispatch_error(ctx: &Context, message: &Message, error: DispatchError) {
-    if let DispatchError::Ratelimited(info) = error {
+    if let DispatchError::Ratelimited(ref info) = error {
         // We notify them only once.
         if info.is_first_try {
             let _ = message
@@ -55,6 +55,16 @@ async fn dispatch_error(ctx: &Context, message: &Message, error: DispatchError) 
                 )
                 .await;
         }
+    }
+
+    if let DispatchError::NotEnoughArguments { min, given } = error {
+        let _ = message
+            .channel_id
+            .say(
+                &ctx.http,
+                format!("{} Arguments must be given, {} was given", min, given),
+            )
+            .await;
     }
 }
 
