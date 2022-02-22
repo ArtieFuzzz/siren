@@ -43,11 +43,11 @@ impl EventHandler for Handler {
 struct General;
 
 #[hook]
-async fn dispatch_error(ctx: &Context, msg: &Message, error: DispatchError) {
+async fn dispatch_error(ctx: &Context, message: &Message, error: DispatchError) {
     if let DispatchError::Ratelimited(info) = error {
         // We notify them only once.
         if info.is_first_try {
-            let _ = msg
+            let _ = message
                 .channel_id
                 .say(
                     &ctx.http,
