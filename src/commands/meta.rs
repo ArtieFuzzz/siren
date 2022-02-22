@@ -6,6 +6,7 @@ use serenity::prelude::*;
 use crate::ShardManagerContainer;
 
 #[command]
+#[bucket = "meta"]
 async fn ping(ctx: &Context, message: &Message) -> CommandResult {
     let data = ctx.data.read().await;
 

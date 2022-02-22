@@ -43,6 +43,11 @@ impl EventHandler for Handler {
 struct General;
 
 #[hook]
+async fn delay_action(ctx: &Context, message: &Message) {
+    let _ = message.react(ctx, '⏱').await;
+}
+
+#[hook]
 async fn dispatch_error(ctx: &Context, message: &Message, error: DispatchError) {
     if let DispatchError::Ratelimited(ref info) = error {
         // We notify them only once.
@@ -89,7 +94,13 @@ async fn main() {
 
     let framework = StandardFramework::new()
         .configure(|c| c.owners(owners).prefix("!!"))
-        .group(&GENERAL_GROUP);
+        .group(&GENERAL_GROUP)
+        .bucket("meta", |b| b.delay(2))
+        .await
+        .bucket("complicated", |b| {
+            b.limit(1).time_span(30).delay_action(delay_action)
+        })
+        .await;
 
     let mut client = Client::builder(&token)
         .framework(framework)
