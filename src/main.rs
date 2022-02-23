@@ -78,7 +78,12 @@ async fn main() {
         shard_manager.lock().await.shutdown_all().await;
     });
 
-    if let Err(why) = client.start().await {
+    let shards = env::var("SHARDS")
+        .unwrap_or(String::from("1"))
+        .parse::<u64>()
+        .unwrap();
+
+    if let Err(why) = client.start_shards(shards).await {
         println!("Client Err: {:?}", why);
     }
 }
