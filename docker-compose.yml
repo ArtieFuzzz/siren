@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  siren:
+    tty: true
+    restart: always
+    container_name: siren
+    env_file: ./.env
+    image: artiefuzzz/siren:latest
+    build: .
+    logging:
+      options:
+        max-size: 1g
+        max-file: '3'
