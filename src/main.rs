@@ -2,22 +2,17 @@ extern crate dotenv;
 
 mod commands;
 mod handler;
+mod hooks;
 
 use commands::meta::*;
 use handler::Handler;
+use hooks::user_error;
 use std::{collections::HashSet, env, sync::Arc};
 
 use serenity::{
     client::bridge::gateway::{GatewayIntents, ShardManager},
-    framework::{
-        standard::{
-            macros::{group, hook},
-            DispatchError,
-        },
-        StandardFramework,
-    },
+    framework::{standard::macros::group, StandardFramework},
     http::Http,
-    model::channel::Message,
     prelude::*,
 };
 
@@ -30,37 +25,6 @@ impl TypeMapKey for ShardManagerContainer {
 #[group]
 #[commands(ping, serverinfo)]
 struct General;
-
-#[hook]
-async fn delay_action(ctx: &Context, message: &Message) {
-    let _ = message.react(ctx, '⏱').await;
-}
-
-#[hook]
-async fn dispatch_error(ctx: &Context, message: &Message, error: DispatchError) {
-    if let DispatchError::Ratelimited(ref info) = error {
-        // We notify them only once.
-        if info.is_first_try {
-            let _ = message
-                .channel_id
-                .say(
-                    &ctx.http,
-                    &format!("Try this again in {} seconds.", info.as_secs()),
-                )
-                .await;
-        }
-    }
-
-    if let DispatchError::NotEnoughArguments { min, given } = error {
-        let _ = message
-            .channel_id
-            .say(
-                &ctx.http,
-                format!("{} Arguments must be given, {} was given", min, given),
-            )
-            .await;
-    }
-}
 
 #[tokio::main]
 async fn main() {
@@ -87,7 +51,9 @@ async fn main() {
         .bucket("meta", |b| b.delay(2))
         .await
         .bucket("complicated", |b| {
-            b.limit(1).time_span(30).delay_action(delay_action)
+            b.limit(1)
+                .time_span(30)
+                .delay_action(user_error::delay_action)
         })
         .await;
 
