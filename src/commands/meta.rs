@@ -59,7 +59,7 @@ async fn serverinfo(ctx: &Context, message: &Message) -> CommandResult {
     message
         .channel_id
         .send_message(&ctx.http, |m| {
-            m.embed(|mut e| {
+            m.embed(|e| {
                 e.title(format!("{} | Server Info", guild.name))
                     .field("ID", guild.id, true)
             })
