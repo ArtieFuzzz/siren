@@ -10,7 +10,7 @@ use hooks::user_error;
 use std::{collections::HashSet, env, sync::Arc};
 
 use serenity::{
-    client::bridge::gateway::{GatewayIntents, ShardManager},
+    client::bridge::gateway::ShardManager,
     framework::{standard::macros::group, StandardFramework},
     http::Http,
     prelude::*,
@@ -33,7 +33,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let token = env::var("TOKEN").expect("TOKEN is not set in .env");
-    let http = Http::new_with_token(&token);
+    let http = Http::new(&token);
 
     let (owners, _bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
@@ -46,9 +46,9 @@ async fn main() {
     };
 
     let framework = StandardFramework::new()
-        .configure(|c| c.owners(owners).prefix("!!"))
+        .configure(|c| c.owners(owners).prefix("!"))
         .group(&GENERAL_GROUP)
-        .bucket("meta", |b| b.delay(2))
+        .bucket("meta", |b| b.limit(1).delay(2))
         .await
         .bucket("complicated", |b| {
             b.limit(1)
@@ -57,10 +57,11 @@ async fn main() {
         })
         .await;
 
-    let mut client = Client::builder(&token)
+    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
+
+    let mut client = Client::builder(&token, intents)
         .framework(framework)
         .event_handler(Handler)
-        .intents(GatewayIntents::GUILDS | GatewayIntents::GUILD_MESSAGES)
         .await
         .expect("Client went brrr");
 

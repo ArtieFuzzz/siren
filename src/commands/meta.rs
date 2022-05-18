@@ -53,7 +53,7 @@ async fn ping(ctx: &Context, message: &Message) -> CommandResult {
 #[bucket = "meta"]
 async fn serverinfo(ctx: &Context, message: &Message) -> CommandResult {
     let raw_guild_id = message.guild_id.unwrap();
-    let raw_guild = raw_guild_id.to_guild_cached(ctx.cache.as_ref()).await;
+    let raw_guild = raw_guild_id.to_guild_cached(ctx.cache.as_ref());
     let guild = raw_guild.unwrap();
 
     message
